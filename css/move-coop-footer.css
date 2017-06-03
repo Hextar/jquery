@@ -1,0 +1,17 @@
+div.cnt-coopraid div.prt-daily-mission.room_header {
+    display: none;
+}
+
+div.cnt-coopraid div.prt-foot-buttons {
+    position: absolute;
+    top: 48px;
+    transform-origin: 0% 0%;
+    transform: scale(0.78);
+    padding-top: 3px !important;
+    padding-bottom: 4px !important;
+}
+
+div.cnt-coopraid div.prt-item-effect {
+    top: 100px;
+    left: 4px;
+}

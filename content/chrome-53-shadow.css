@@ -1,0 +1,8 @@
+div.viramate-menu-icon,
+div.viramate-menu,
+div.performance-hud,
+div.network-hud,
+div.viramate-status-panel,
+div.viramate-raids-panel {
+    zoom: normal !important;
+}
