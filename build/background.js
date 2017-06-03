@@ -72,6 +72,7 @@ var isShutdown = false;
 var lastLocation = null;
 var idleRedirectPending = false;
 var lastRedirectTarget = null;
+var activatorTab;
 chrome.runtime.onMessage.addListener(onRuntimeMessage);
 chrome.alarms.onAlarm.addListener(onAlarm);
 chrome.runtime.onInstalled.addListener(function () {
@@ -85,7 +86,17 @@ chrome.runtime.onInstalled.addListener(function () {
                     }),
                     new dc.PageStateMatcher({
                         pageUrl: { hostEquals: 'gbf.game.mbga.jp', schemes: ["https", "http"] },
+                    }),
+                    new dc.PageStateMatcher({
+                        pageUrl: { hostEquals: 'gbf-raidfinder.aikats.us', schemes: ["https", "http"] },
+                    }),
+                    new dc.PageStateMatcher({
+                        pageUrl: { hostEquals: 'granblue-raidfinder.herokuapp.com', schemes: ["https", "http"] },
+                    }),
+                    new dc.PageStateMatcher({
+                        pageUrl: { hostEquals: 'gbf-raidfinder.la-foret.me', schemes: ["https", "http"] },
                     })
+                    
                 ],
                 actions: [new dc.ShowPageAction()]
             }
@@ -209,6 +220,96 @@ function formatItemCounters(uid) {
     return counterDict;
 }
 ;
+function goToGranblueTabAndRapidJoin(raidId) {
+    var gbfTabId = -1;
+    var url = "gbf.game.mbga.jp";
+    var urls = ["gbf.game.mbga.jp","http://game.granbluefantasy.jp"];
+    chrome.tabs.query({}, function (tabs) {
+        if (tabs.length === 0) return;
+        for (var i = 0; i < tabs.length; i++) {
+            for(var j = 0; j < urls.length; j++) {
+                if (tabs[i].url.includes(urls[j])){
+                    activatorTab = tabs[i];
+                    gbfTabId = tabs[i].id;
+                }
+            }
+        }
+        if (gbfTabId >= 0) {
+            chrome.tabs.update(gbfTabId, {selected: true});
+            rapidJoinRaid(raidId);
+        } else return;
+    });
+}
+;
+function rapidJoinRaid(raidId) {
+    console.log("2. We're now doing shit bro " + raidId);
+    var payload = { special_token: null, battle_key: raidId };
+    var msg = {
+        type: "doGameAjax",
+        url: "/quest/battle_key_check",
+        data: JSON.stringify(payload),
+        tabId: activatorTab.id
+    };
+    doGameAjax(msg, activatorTab.id, null, function (result) {
+        console.log("4. Battle key check returned", result);
+        if (result) {
+            if (result.redirect) {
+                console.log("5. request redirect ",result.redirect);
+                actuallySendMessage({type: "doGameRedirect",url: result.redirect,tabId: activatorTab.id},activatorTab.id);
+            }
+            else if ((typeof (result.current_battle_point) === "number") && !result.battle_point_check) {
+                console.log("5. BP needed");
+                tellWhyRapidJoinFailed({title: "Battle",body: "You don't have enought BP"});
+                var statusText = result.chapter_name + " @ ";
+                statusText += result.member_count + "people " + result.boss_hp_width + "% Hp";
+                window.open("/../src/popup/popup.html", "extension_popup", "width=400,height=300,status=no,scrollbars=yes,resizable=no");
+                actuallySendMessage({ type: "getUserIdAndTabId", tabId: activatorTab.id },activatorTab.id,function (uid) {
+                    var userDict = getUserDict(uid);
+                    getStatus(userDict,{ type: "getStatus", tabId: activatorTab.id, uid: uid, force: true }, function (status) {
+                        console.log("5.2 No berries faggot", status);
+                        var useCount = Math.min(result.used_battle_point, result.used_battle_point - status.bp);
+                            //useNormalItemCallback(5, useCount, function () {
+                                // always use the current raid id in case it changes due to the focus changing
+                                //rapidJoinRaid(raidId);
+                            //});
+                    });
+                });
+            }
+            else if (result.idleTimeout) {
+                tellWhyRapidJoinFailed({title: "Battle",body: "Server timeout"});
+                console.log("Idle timeout");
+            }
+            else {
+                if(result != null) tellWhyRapidJoinFailed(result.popup);
+                else tellWhyRapidJoinFailed({title: "Battle",body: "Server error 1"});
+                console.log("Failed to join raid");
+            }
+        }
+        else {
+            if(result != null) tellWhyRapidJoinFailed(result.popup);
+            else tellWhyRapidJoinFailed({title: "Battle",body: "Server error 2"});
+            console.log("Failed to join raid");
+        }
+    });
+}
+;
+function tellWhyRapidJoinFailed(msg) {
+    var timer = null;
+    var opt = {
+      type: "basic",
+      title: msg.title,
+      message: msg.body,
+      iconUrl: "../../icons/active-128.png",
+    };
+    chrome.notifications.create("copied", opt, function(id){
+        if(timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        timer = setTimeout(function(){chrome.notifications.clear(id);}, 3000);
+    });
+}
+;
 function onRuntimeMessage(msg, sender, sendResponse) {
     if (chrome.runtime.lastError)
         log(chrome.runtime.lastError);
@@ -226,6 +327,13 @@ function onRuntimeMessage(msg, sender, sendResponse) {
         return;
     }
     switch (key) {
+        case "raidFinderItemClicked":
+            console.log("1. Ho ricevuto richiesta di RapidJoin ", msg.type);
+            goToGranblueTabAndRapidJoin(msg.message);
+            break;
+        case "raidItemClicked":
+                return true;
+            break;
         case "getUserIds":
             sendResponse(JSON.stringify(Object.keys(users)));
             break;
@@ -700,6 +808,17 @@ function maybeDoUpdate(nextTime, minimumUpdateDelay, getValue, doUpdate, sendRes
         sendResponse(getValue(uid));
         return false;
     }
+}
+;
+function doGameRedirect(url) {
+    var msg = {
+        type: "doGameRedirect",
+        url: url,
+        tabId: activatorTab.id
+    };
+    chrome.runtime.sendMessage(msg);
+    if (chrome.runtime.lastError)
+        console.log(chrome.runtime.lastError);
 }
 ;
 function doGameAjax(msg, tabId, uid, callback) {
