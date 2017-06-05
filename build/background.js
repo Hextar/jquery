@@ -221,6 +221,7 @@ function formatItemCounters(uid) {
 }
 ;
 function goToGranblueTabAndRapidJoin(raidId) {
+    console.log("doing something");
     var gbfTabId = -1;
     var url = "gbf.game.mbga.jp";
     var urls = ["gbf.game.mbga.jp","http://game.granbluefantasy.jp"];
@@ -228,10 +229,15 @@ function goToGranblueTabAndRapidJoin(raidId) {
         if (tabs.length === 0) return;
         for (var i = 0; i < tabs.length; i++) {
             for(var j = 0; j < urls.length; j++) {
-                if (tabs[i].url.includes(urls[j])){
-                    activatorTab = tabs[i];
-                    gbfTabId = tabs[i].id;
+                if(tabs[i] != undefined) {
+                    if(tabs[i].url != undefined) {
+                        if (tabs[i].url.includes(urls[j])){
+                            activatorTab = tabs[i];
+                            gbfTabId = tabs[i].id;
+                        }
+                    }
                 }
+
             }
         }
         if (gbfTabId >= 0) {
@@ -810,7 +816,7 @@ function maybeDoUpdate(nextTime, minimumUpdateDelay, getValue, doUpdate, sendRes
     }
 }
 ;
-function doGameRedirect(url) {
+    function doGameRedirect(url) {
     var msg = {
         type: "doGameRedirect",
         url: url,

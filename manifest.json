@@ -1,11 +1,9 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
-
-  "name": "Viramate",
-  "short_name": "Viramate",
-  "version": "2017.5.31.2",
+  "name": "Viramate+",
+  "short_name": "Viramate+",
+  "version": "2017.6.3",
   "manifest_version": 2,
-  "description": "Your Granblue Companion",
+  "description": "Your Granblue Companion, now on steroids",
   "icons": {
     "16": "icons/16.png",
     "24": "icons/inactive-24.png",
