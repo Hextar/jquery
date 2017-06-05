@@ -153,7 +153,7 @@ function parseSkill(button, icon) {
         result.characterNumber = characterNumber;
         result.button = button;
         result.icon = icon;
-        result.iconUrl = icon.firstElementChild.src;
+        result.iconUrl = icon.querySelector("img").src;
     }
     return result;
 }
@@ -575,16 +575,16 @@ function tryGetParsedSkill(characterNumber, abilityNumber) {
                 result.button = icon.parentElement;
                 result.icon = icon;
             }
+            if (!result.iconUrl)
+                result.iconUrl = result.icon.querySelector("img").src;
             result.index = abilityNumber;
         }
         return result;
     }
     else {
         let icon = findSkillIcon(characterNumber, abilityNumber);
-        if (!icon) {
-            log("No icon with name " + className);
+        if (!icon)
             return false;
-        }
         result = parseSkill(icon.parentNode, icon);
         if (result)
             result.index = abilityNumber;

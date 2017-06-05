@@ -1,6 +1,7 @@
 "use strict";
 var settings = new Store("settings", {
-    "preferFriendSummons": true,
+    "preferFriendSummons": false,
+    "preferNonFriendSummons": true,
     "preferLimitBrokenSummons": true,
     "preferHighLevelSummons": true,
     "notifyOnFullAP": false,
@@ -96,7 +97,6 @@ chrome.runtime.onInstalled.addListener(function () {
                     new dc.PageStateMatcher({
                         pageUrl: { hostEquals: 'gbf-raidfinder.la-foret.me', schemes: ["https", "http"] },
                     })
-                    
                 ],
                 actions: [new dc.ShowPageAction()]
             }

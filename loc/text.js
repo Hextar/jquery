@@ -286,6 +286,10 @@ this.i18n = {
         "ko": "친구 소환을 우선하기",
         "zh-cn": "优先展示朋友的召唤石"
     },
+    "preferNonFriendSummons": {
+        "en": "Prefer non-friend summons",
+        // FIXME
+    },
     "preferLimitBrokenSummons": {
         "en": "Prefer limit-broken summons",
         "ja": "最終上限解放召喚石を優先する",

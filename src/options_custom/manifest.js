@@ -290,7 +290,7 @@ function getSettingsManifest (i18n) {
         {
             "tab": i18n.get("category-summons"),
             "group": i18n.get("group-summons"),
-            "name": "preferFriendSummons",
+            "name": "preferNonFriendSummons",
             "type": "checkbox",
             "label": i18n,
         },

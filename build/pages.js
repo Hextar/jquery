@@ -786,8 +786,12 @@ function processSmartSupports() {
             var result = 0;
             if (result === 0)
                 result = rhs.tier - lhs.tier;
-            if ((result === 0) && (rhs.isFriend !== lhs.isFriend))
-                result = (rhs.isFriend ? 1 : 0) - (lhs.isFriend ? 1 : 0);
+            if ((result === 0) && (rhs.isFriend !== lhs.isFriend)) {
+                if (currentSettings.preferNonFriendSummons)
+                    result = (rhs.isFriend ? 0 : 1) - (lhs.isFriend ? 0 : 1);
+                else
+                    result = (rhs.isFriend ? 1 : 0) - (lhs.isFriend ? 1 : 0);
+            }
             // Shuffle summons within the same tier/friend status
             if (result === 0) {
                 if (rhs.randomKey > lhs.randomKey)
@@ -1030,8 +1034,8 @@ function sortSupportList(settings, elements) {
             result = ((boostedSummons.indexOf(rhs.id) >= 0) ? 1 : 0) - ((boostedSummons.indexOf(lhs.id) >= 0) ? 1 : 0);
         if ((result === 0) && settings.preferBunny)
             result = (bunnies.indexOf(rhs.id)) - (bunnies.indexOf(lhs.id));
-        if (settings.preferFriendSummons && (rhs.isFriend !== lhs.isFriend))
-            result = (rhs.isFriend ? 1 : 0) - (lhs.isFriend ? 1 : 0);
+        if (settings.preferNonFriendSummons && (rhs.isFriend !== lhs.isFriend))
+            result = (rhs.isFriend ? 0 : 1) - (lhs.isFriend ? 0 : 1);
         if ((result === 0) && settings.preferLimitBrokenSummons)
             result = rhs.tier - lhs.tier;
         if ((result === 0) && settings.preferHighLevelSummons)
